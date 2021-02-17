@@ -14,6 +14,7 @@
 #endif
 #include "ZC_ssim.h"
 #include "cuZC_entry.h"
+#include "CUB_reduce.h"
 
 #include "matrix.hpp"
 
@@ -98,13 +99,16 @@ size_t r5, size_t r4, size_t r3, size_t r2, size_t r1)
 		}	
 	}
     printf("CPU:%e,%e,%e,%e,%e,%e,%e,%e,%e,%e\n", sum1, sum2, minDiff, maxDiff, sumDiff, sumOfDiffSquare, minErr, maxErr, sumErr, sumErrSqr);
-    cudaMalloc((void**)&ddata1,   fsize); 
-    cudaMalloc((void**)&ddata2,   fsize); 
+    cudaMalloc((void**)&ddata1, fsize); 
+    cudaMalloc((void**)&ddata2, fsize); 
     cudaMalloc((void**)&ddiff, dsize); 
-    cudaMemcpy(ddata1,   data1,   fsize, cudaMemcpyHostToDevice); 
-    cudaMemcpy(ddata2,   data2,   fsize, cudaMemcpyHostToDevice); 
+    cudaMemcpy(ddata1, data1, fsize, cudaMemcpyHostToDevice); 
+    cudaMemcpy(ddata2, data2, fsize, cudaMemcpyHostToDevice); 
     cudaMemcpy(ddiff, diff, dsize, cudaMemcpyHostToDevice); 
 
+    //block_reduce(data1, data2, diff, fsize, absErrPDF, results, r3, r2, r1, numOfElem);
+    grid_reduce(data1, data2, diff, fsize, absErrPDF, results, r3, r2, r1, numOfElem);
+    exit(0);
     results = cu_typeOne(ddata1, ddata2, ddiff, absErrPDF, results, r3, r2, r1, numOfElem);
     printf("GPU:%e,%e,%e,%e,%e,%e,%e,%e,%e,%e\n", results[r3*4], results[r3*5], results[0], results[r3*2], results[r3*6], results[r3*7], results[r3], results[r3*3], results[r3*8], results[r3*9]);
     sum1 = results[r3*4];

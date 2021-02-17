@@ -1,7 +1,6 @@
 #include "cuZC_entry.h"
 #include "timingGPU.h"
 
-TimingGPU timer_GPU;
  
 double cu_SSIM_3d_windowed(int windowSize0, int windowSize1, int windowSize2, int windowShift0, int windowShift1, int windowShift2)
 {
@@ -32,6 +31,7 @@ double cu_SSIM_3d_windowed(int windowSize0, int windowSize1, int windowSize2, in
 
 int cu_SSIM(float *data1, float *data2, size_t r3, size_t r2, size_t r1, int ssimSize, int ssimShift)
 {
+    TimingGPU timer_GPU;
     float data[246];
     for (int i=0; i<246; i++){
         data[i] = 1;
@@ -83,6 +83,7 @@ int cu_SSIM(float *data1, float *data2, size_t r3, size_t r2, size_t r1, int ssi
 
 double *cu_typeOne(float *ddata1, float *ddata2, double *ddiff, double *absErrPDF, double *results, size_t r3, size_t r2, size_t r1, size_t ne){
 
+    TimingGPU timer_GPU;
     //float *ddata1, *ddata2;
     double *dabsErrPDF, *dresults;
     //for (int i=r1*r2*6+r2*6;i<r1*r2*6+r2*6+7;i++){
@@ -124,6 +125,7 @@ double *cu_typeOne(float *ddata1, float *ddata2, double *ddiff, double *absErrPD
 
 float *cu_typeTwo(float *ddata, float *der, size_t r3, size_t r2, size_t r1, size_t order){
 
+    TimingGPU timer_GPU;
     float *dder;
     const int dsize = (r3-order*2) * (r2-order*2) * (r1-order*2) * sizeof(float);
 
@@ -157,6 +159,7 @@ double cu_typeThree(float *data1, float *data2, int r3, int r2, int r1, int ssim
     //    printf("data%i=%e, %e\n",i, data1[i], data2[i]);
 
     //}
+    TimingGPU timer_GPU;
     float *ddata1, *ddata2;
     double *dresults;
 	double *results = (double*)malloc(r2*r1*((r3-ssimSize+1)/ssimShift)*sizeof(double));
