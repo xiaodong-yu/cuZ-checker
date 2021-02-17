@@ -3,7 +3,7 @@ set (zc_sources
   DynamicDoubleArray.c     ZC_CompareData_double.cpp  ZC_DataSetHandler.c      ZC_conf.c                ZC_util.c
   DynamicFloatArray.c      ZC_CompareData_float.cpp   ZC_gnuplot.c             dictionary.c	      ZC_ssim.c
   DynamicIntArray.c        ZC_DataProperty.c        ZC_Hashtable.c           ZC_latex.c               iniparser.c
-  ZC_ByteToolkit.c         ZC_DataProperty_double.c ZC_quicksort.c           zc.c	zc_derivativeMetrics.cpp	
+  ZC_ByteToolkit.c         ZC_DataProperty_double.c ZC_quicksort.c           zc.c	zc_derivativeMetrics.cpp
 )
 
 # TBA: ZC_R_math.c // R
@@ -22,6 +22,9 @@ if (Boost_FOUND)
 endif ()
 
 add_library (zc SHARED ${zc_sources})
-target_link_libraries (zc ${zc_dependencies} ${CMAKE_THREAD_LIBS_INIT} m)
+#target_link_libraries (zc ${zc_dependencies} ${CMAKE_THREAD_LIBS_INIT} m)
+if(OpenMP_CXX_FOUND)
+    target_link_libraries (zc PUBLIC OpenMP::OpenMP_CXX)
+endif()
 
 install (TARGETS zc LIBRARY DESTINATION lib)

@@ -16,8 +16,8 @@ target_link_libraries (generateReport zc)
 add_executable (modifyZCConfig modifyZCConfig.c)
 target_link_libraries (modifyZCConfig zc)
 
-add_executable (runOfflineCase runOfflineCase.c)
-target_link_libraries (runOfflineCase zc)
+#add_executable (runOfflineCase runOfflineCase.c)
+#target_link_libraries (runOfflineCase zc)
 
 add_executable (testRscript_double testRscript_double.c)
 target_link_libraries (testRscript_double zc)
@@ -29,7 +29,7 @@ add_executable (testRscript_readBinFloat testRscript_readBinFloat.c)
 target_link_libraries (testRscript_readBinFloat zc)
 
 install (TARGETS analyzeDataProperty analyzeDataProperty_multivars compareDataSets
-  generateGNUPlot generateReport modifyZCConfig runOfflineCase
+  generateGNUPlot generateReport modifyZCConfig
          RUNTIME DESTINATION bin)
 
 if (MPI_FOUND)

@@ -11,6 +11,7 @@ set (LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
 
 include_directories (${CMAKE_CURRENT_SOURCE_DIR}/zc/include)
 
+find_package(OpenMP REQUIRED)
 find_package (Threads REQUIRED)
 set (CMAKE_THREAD_PREFER_PTHREAD)
 

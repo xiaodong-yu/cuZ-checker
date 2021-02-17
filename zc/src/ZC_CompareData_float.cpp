@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <sys/stat.h>
+#include <omp.h>
 #include "ZC_util.h"
 #include "ZC_DataProperty.h"
 #include "ZC_CompareData.h"
@@ -41,6 +42,36 @@ size_t r5, size_t r4, size_t r3, size_t r2, size_t r1)
 
 	double *diff = (double*)malloc(numOfElem*sizeof(double));
 	double *relDiff = (double*)malloc(numOfElem*sizeof(double));
+
+    int x = 0;
+    int N = 100;
+    int *data = new int[N];
+    for ( i=0; i<N; i++)
+        data[i] = i; 
+    #pragma omp parallel for reduction(max:x)
+    for ( i=0; i<N; i++)
+        x = max(x,data[i]);
+    printf("test:%i\n", x);
+
+    N = 600000000;
+    int j = 0;
+    double tavg = 0;
+
+    double timer_start = omp_get_wtime();
+    omp_set_num_threads(48);
+
+    #pragma omp parallel for reduction(+:tavg)
+    for (j = 0; j < N; ++j) {
+        tavg += j;
+                    
+    }
+
+    double timer_elapsed = omp_get_wtime() - timer_start;
+    tavg = tavg / N;
+
+    std::cout << tavg << " took " << timer_elapsed << std::endl;
+
+    exit(0);
 
 	for (i = 0; i < numOfElem; i++)
 	{
