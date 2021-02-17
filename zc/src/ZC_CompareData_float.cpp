@@ -13,12 +13,8 @@
 #include "ZC_R_math.h"
 #endif
 #include "ZC_ssim.h"
-#include "cuZC_entry.h"
 
 #include "matrix.hpp"
-
-int ssimsize = 7;
-int ssimshift = 1;
 
 void ZC_compareData_float(ZC_CompareData* compareResult, float* data1, float* data2, 
 size_t r5, size_t r4, size_t r3, size_t r2, size_t r1)
@@ -44,29 +40,11 @@ size_t r5, size_t r4, size_t r3, size_t r2, size_t r1)
 	int dim = ZC_computeDimension(r5, r4, r3, r2, r1);
 
 	double *diff = (double*)malloc(numOfElem*sizeof(double));
-	double *absErrPDF = (double*)malloc(numOfElem*sizeof(double));
-	double *results = (double*)malloc(r3*10*sizeof(double));
 	double *relDiff = (double*)malloc(numOfElem*sizeof(double));
-
-
-    float *ddata1, *ddata2;
-    double *ddiff;
-    //for (int i=r1*r2*6+r2*6;i<r1*r2*6+r2*6+7;i++){
-    ////for (int i=0;i<r1*r2*r3;i++){
-    //    printf("data%i=%e, %e\n",i, data1[i], data2[i]);
-    //    printf("data%i=%e, %e\n",i, data1[i], data2[i]);
-
-    //}
-
-    const int fsize = numOfElem * sizeof(float);
-    const int dsize = numOfElem * sizeof(double);
-
 
 	for (i = 0; i < numOfElem; i++)
 	{
-        //data2[i] = 5;
 		sum1 += data1[i];
-        //if (data1[i]>0.0) printf("test[%i]:%e\n",i, data1[i]);
 		sum2 += data2[i];
 		
 		diff[i] = data2[i]-data1[i];
@@ -97,36 +75,6 @@ size_t r5, size_t r4, size_t r3, size_t r2, size_t r1)
 			sumErrSqr_rel += err*err;
 		}	
 	}
-    printf("CPU:%e,%e,%e,%e,%e,%e,%e,%e,%e,%e\n", sum1, sum2, minDiff, maxDiff, sumDiff, sumOfDiffSquare, minErr, maxErr, sumErr, sumErrSqr);
-    cudaMalloc((void**)&ddata1,   fsize); 
-    cudaMalloc((void**)&ddata2,   fsize); 
-    cudaMalloc((void**)&ddiff, dsize); 
-    cudaMemcpy(ddata1,   data1,   fsize, cudaMemcpyHostToDevice); 
-    cudaMemcpy(ddata2,   data2,   fsize, cudaMemcpyHostToDevice); 
-    cudaMemcpy(ddiff, diff, dsize, cudaMemcpyHostToDevice); 
-
-    results = cu_typeOne(ddata1, ddata2, ddiff, absErrPDF, results, r3, r2, r1, numOfElem);
-    printf("GPU:%e,%e,%e,%e,%e,%e,%e,%e,%e,%e\n", results[r3*4], results[r3*5], results[0], results[r3*2], results[r3*6], results[r3*7], results[r3], results[r3*3], results[r3*8], results[r3*9]);
-    exit(0);
-    sum1 = results[r3*4];
-    sum2 = results[r3*5];
-    minDiff = results[0];
-    maxDiff = results[r3*2];
-    sumDiff = results[r3*6];
-    sumOfDiffSquare = results[r3*7];
-    minErr = results[r3];
-    maxErr = results[r3*3];
-    sumErr = results[r3*8];
-    sumErrSqr = results[r3*9];
-
-    size_t order=1;
-	float *der1 = (float*)malloc((r3-order*2)*(r2-order*2)*(r1-order*2)*sizeof(float));
-    der1 = cu_typeTwo(ddata1, der1, r3, r2, r1, order);
-    //exit(0);
-	//double *ss = (double*)malloc(100*2*sizeof(double));
-    //memset(ss, 0, 100*2*sizeof(double));
-    //ss = cu_typeThree(ddata1, ddata2, ss, r3, r2, r1, ssimsize, ssimshift);
-    //exit(0);
 	
 	ZC_DataProperty* property = compareResult->property;
 	
@@ -246,9 +194,6 @@ size_t r5, size_t r4, size_t r3, size_t r2, size_t r1)
 	{
 		compareResult->autoCorrAbsErr = ZC_compute_autocorrelation1D_double(diff, numOfElem, avgDiff);
 	}
-    cudaFree(ddata1);
-    cudaFree(ddata2);
-    cudaFree(ddiff);
 
 #ifdef HAVE_FFTW3	
 	if(errAutoCorr3DFlag)
@@ -272,6 +217,7 @@ size_t r5, size_t r4, size_t r3, size_t r2, size_t r1)
 			break;
 		default: 
 			printf("Error: wrong dimension (dim=%d)\n", dim);
+			exit(0);
 		}		
 	}
 #endif
@@ -425,7 +371,7 @@ size_t r5, size_t r4, size_t r3, size_t r2, size_t r1)
 		int status = 0; //0: normal , 1: abnormal
 		
 		//double der_Order1_PSNR_Metric=zc_calc_metric_der_order1_psnr_float(data1,lossyData,nDims,dim3,dim2,dim1,dim0,&status);
-		compareResult->derivativeOrder1_ssim = zc_calc_metric_der_order1_ssim_float(data1, data2, der1, dim, r4, r3, r2, r1, &status);
+		compareResult->derivativeOrder1_ssim = zc_calc_metric_der_order1_ssim_float(data1, data2, dim, r4, r3, r2, r1, &status);
 		if(status!=0)
 			compareResult->derivativeOrder1_ssim = -1; //invalid dimension settings for this metric
 	}	

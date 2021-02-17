@@ -2,12 +2,11 @@
 #include <cmath>
 #include <matrix.hpp>
 #include "zc.h"
-#include "cuZC_entry.h"
 
 int ssimSize=7;
 int ssimShift=1;
 
-double zc_calc_metric_der_order1_ssim_float(float *data1, float *data2, float *der1,
+double zc_calc_metric_der_order1_ssim_float(float *data1, float *data2,
   size_t dim, size_t r4, size_t r3, size_t r2, size_t r1, int *status){
   
   *status=-1;
@@ -58,24 +57,6 @@ double zc_calc_metric_der_order1_ssim_float(float *data1, float *data2, float *d
   lossy.derOr_1_norm_2(temp2);
   
   double result;
-  int a=0;
-  for (int i=0; i<temp1.size0; i++){
-      for (int j=0; j<temp1.size1; j++){
-          for (int k=0; k<temp1.size2; k++){
-              if (temp1.data[i*temp1.size1*temp1.size2+j*temp1.size2+k]!=0.0) printf("data%i,%i,%i=%e\n",i,j,k,temp1.data[i*temp1.size1*temp1.size2+j*temp1.size2+k]-der1[i*temp1.size1*temp1.size2+j*temp1.size2+k]);
-          }
-      }
-  }
-  exit(0);
-  //for (int i=temp1.size0*temp1.size1*6+temp1.size1*6;i<temp1.size0*temp1.size1*6+temp1.size1*6+7;i++){
-  //for (int i=0;i<(r2-2);i++){
-  //for (int j=0;j<(r1-2);j++){
-  //  //printf("hdata%i=%e, %e\n",i, temp1.data[i], temp2.data[i]);
-  //  if (temp2.data[i*(r1-2)+j]!=0.0)printf("hdata%i=%e, %e\n", a, data1[i*(r1-2)+j], temp2.data[i*(r1-2)+j]);
-  //    a++;
-
-  //}
-  //}
   
   switch (orig.nDim) {
     case 1:
@@ -85,11 +66,7 @@ double zc_calc_metric_der_order1_ssim_float(float *data1, float *data2, float *d
       result=temp1.SSIM_2d_windowed(temp2,ssimSize,ssimSize,ssimShift,ssimShift);
       break;
     case 3:
-      //result=temp1.SSIM_3d_windowed(temp2,ssimSize,ssimSize,ssimSize,ssimShift,ssimShift,ssimShift);
-      //cu_SSIM_3d_windowed(ssimSize,ssimSize,ssimSize,ssimShift,ssimShift,ssimShift);
-      //cu_SSIM(temp1.data, temp2.data, temp1.size2, temp1.size1, temp1.size0, ssimSize, ssimShift);
-      cu_typeThree(temp1.data, temp2.data, temp1.size2, temp1.size1, temp1.size0, ssimSize, ssimShift);
-      exit(0);
+      result=temp1.SSIM_3d_windowed(temp2,ssimSize,ssimSize,ssimSize,ssimShift,ssimShift,ssimShift);
       break;
     case 4:
       result=temp1.SSIM_4d_windowed(temp2,ssimSize,ssimSize,ssimSize,ssimSize,ssimShift,ssimShift,ssimShift,ssimShift);

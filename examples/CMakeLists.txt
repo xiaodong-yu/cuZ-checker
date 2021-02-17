@@ -4,11 +4,7 @@ target_link_libraries (analyzeDataProperty zc)
 add_executable (analyzeDataProperty_multivars analyzeDataProperty_multivars.c)
 target_link_libraries (analyzeDataProperty_multivars zc)
 
-add_executable (compareDataSets compareDataSets.cu)
-set_property(TARGET compareDataSets PROPERTY CUDA_ARCHITECTURES 70 75)
-set_target_properties (compareDataSets
-                    PROPERTIES
-                    CUDA_SEPARABLE_COMPILATION ON)
+add_executable (compareDataSets compareDataSets.c)
 target_link_libraries (compareDataSets zc)
 
 add_executable (generateGNUPlot generateGNUPlot.c)
@@ -20,8 +16,8 @@ target_link_libraries (generateReport zc)
 add_executable (modifyZCConfig modifyZCConfig.c)
 target_link_libraries (modifyZCConfig zc)
 
-#add_executable (runOfflineCase runOfflineCase.c)
-#target_link_libraries (runOfflineCase zc)
+add_executable (runOfflineCase runOfflineCase.c)
+target_link_libraries (runOfflineCase zc)
 
 add_executable (testRscript_double testRscript_double.c)
 target_link_libraries (testRscript_double zc)
@@ -33,7 +29,7 @@ add_executable (testRscript_readBinFloat testRscript_readBinFloat.c)
 target_link_libraries (testRscript_readBinFloat zc)
 
 install (TARGETS analyzeDataProperty analyzeDataProperty_multivars compareDataSets
-  generateGNUPlot generateReport modifyZCConfig
+  generateGNUPlot generateReport modifyZCConfig runOfflineCase
          RUNTIME DESTINATION bin)
 
 if (MPI_FOUND)

@@ -1,28 +1,18 @@
-cmake_minimum_required (VERSION 3.10.3)
+cmake_minimum_required (VERSION 3.1.3)
 project (zchecker)
-
-include(CheckLanguage)
-check_language(CUDA)
-if(CMAKE_CUDA_COMPILER)
-    enable_language(CUDA)
-endif()
 
 set (CMAKE_DISABLE_SOURCE_CHANGES ON)
 set (CMAKE_DISABLE_IN_SOURCE_BUILD ON)
+set (CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 set (CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 set (EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 set (LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
-SET(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler=-Wall")
 
 include_directories (${CMAKE_CURRENT_SOURCE_DIR}/zc/include)
-#include_directories (${CUDA_TOOLKIT_ROOT_DIR}/samples/common/inc)
-include_directories (/usr/local/cuda/samples/common/inc)
 
-if (NOT DEFINED CMAKE_CUDA_STANDARD)
-    set(CMAKE_CUDA_STANDARD 11)
-    set(CMAKE_CUDA_STANDARD_REQUIRED True)
-endif ()
+find_package (Threads REQUIRED)
+set (CMAKE_THREAD_PREFER_PTHREAD)
 
 #find_package (MPI)
 #if (MPI_FOUND)
@@ -66,6 +56,12 @@ endif ()
 #    include_directories (${LevelDB_INCLUDE_DIR})
 #    add_definitions (-DHAVE_LEVELDB)
 #  endif ()
+#endif ()
+#
+#find_package (PNG)
+#if (PNG_FOUND)
+#  include_directories (${PNG_INCLUDE_DIRS})
+#  add_definitions (-DHAVE_PNG)
 #endif ()
 
 find_package (Threads REQUIRED)
