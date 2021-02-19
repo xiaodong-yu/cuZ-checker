@@ -71,8 +71,6 @@ size_t r5, size_t r4, size_t r3, size_t r2, size_t r1)
 
     std::cout << tavg << " took " << timer_elapsed << std::endl;
 
-    exit(0);
-
 	for (i = 0; i < numOfElem; i++)
 	{
 		sum1 += data1[i];

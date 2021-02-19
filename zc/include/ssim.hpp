@@ -1,6 +1,7 @@
 #ifndef SSIM_HPP
 #define SSIM_HPP
 
+#include <omp.h>
 
 template <typename dT>
 double matrix<dT>::SSIM_4d_windowed(matrix &other, int windowSize0, int windowSize1, int windowSize2, int windowSize3, int windowShift0, int windowShift1, int windowShift2, int windowShift3){
@@ -121,20 +122,30 @@ double matrix<dT>::SSIM_3d_windowed(matrix &other, int windowSize0, int windowSi
   offsetInc0=windowShift0;
   offsetInc1=windowShift1;
   offsetInc2=windowShift2;
-  
+
+  double local_sum; 
   for(offset2=0; offset2+windowSize2<=size2; offset2+=offsetInc2){ //MOVING WINDOW
       
     for(offset1=0; offset1+windowSize1<=size1; offset1+=offsetInc1){ //MOVING WINDOW
       
-      for(offset0=0; offset0+windowSize0<=size0; offset0+=offsetInc0){ //MOVING WINDOW
+      for(offset0=windowSize0; offset0<=size0; offset0+=offsetInc0) //MOVING WINDOW
         nw++;
-        ssimSum+=SSIM_3d_calcWindow(other, offset0, offset1, offset2, windowSize0, windowSize1, windowSize2);
-        
+      omp_set_num_threads(4);
+      #pragma omp parallel private(local_sum, offset0) shared(ssimSum) 
+      { 
+          local_sum = 0;
+          #pragma omp for schedule(static,1) 
+          for(offset0=windowSize0; offset0<=size0; offset0+=offsetInc0){ //MOVING WINDOW
+            local_sum += SSIM_3d_calcWindow(other, offset0, offset1, offset2, windowSize0, windowSize1, windowSize2);
+          }
+          #pragma omp critical 
+          ssimSum += local_sum;
       }
     }
   }
   
-  //cout<<"# of windows = "<<nw<<endl;
+  cout<<"# of windows = "<<nw<<ssimSum<<endl;
+  exit(0);
   return ssimSum/nw;
   return 0;
 }
