@@ -15,6 +15,9 @@ double* ZC_compute_autocorrelation1D_double(double* data, size_t numOfElem, doub
 	size_t i = 0;
 	int delta = 0;
 
+    double timer_start = omp_get_wtime();
+    omp_set_num_threads(4);
+
 	if (numOfElem > 4096)
 	{
 		double cov = 0;
@@ -34,7 +37,7 @@ double* ZC_compute_autocorrelation1D_double(double* data, size_t numOfElem, doub
 			{
 				double sum = 0;
                 double local_sum; 
-                omp_set_num_threads(4);
+                omp_set_num_threads(20);
                 #pragma omp parallel private(local_sum, i) shared(sum) 
                 { 
                     local_sum = 0;
@@ -47,7 +50,6 @@ double* ZC_compute_autocorrelation1D_double(double* data, size_t numOfElem, doub
                 }
 
 				autocorr[delta] = sum/(numOfElem-delta)/cov;
-                printf("test:%e",sum);
 			}
 		}
 	}
@@ -91,13 +93,26 @@ double* ZC_compute_autocorrelation1D_double(double* data, size_t numOfElem, doub
 			{
 				double sum = 0;
 
-				for (i = 0; i < numOfElem-delta; i++)
-					sum += (data[i]-avg_0)*(data[i+delta]-avg_1);
+                double local_sum; 
+                omp_set_num_threads(20);
+                #pragma omp parallel private(local_sum, i) shared(sum) 
+                { 
+                    local_sum = 0;
+                    #pragma omp for schedule(static,1) 
+				    for (i = delta; i < numOfElem; i++){
+					   local_sum += (data[i]-avg_0)*(data[i+delta]-avg_1);
+                    }
+                    #pragma omp critical 
+                    sum += local_sum;
+                }
 
 				autocorr[delta] = sum/(numOfElem-delta)/(cov_0*cov_1);
 			}
 		}
 	}
+
+    double timer_elapsed = omp_get_wtime() - timer_start;
+    printf("Autocorr exec. time (sec): %f\n", timer_elapsed);
 
 	autocorr[0] = 1;	
 	return autocorr;

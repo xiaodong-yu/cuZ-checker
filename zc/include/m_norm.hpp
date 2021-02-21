@@ -79,6 +79,9 @@ void matrix<dT>::derOr_1_norm_2(matrix<dT> &norm){
                                   der_2d_dim1(i0+1,i1+1)
                                   );
   }else if(nDim==3){
+    double timer_start = omp_get_wtime();
+    omp_set_num_threads(20);
+
     norm.initialize(3,size0-2,size1-2,size2-2);
     for(i2=0;i2<size2-2;i2++)
       for(i1=0;i1<size1-2;i1++)
@@ -90,6 +93,9 @@ void matrix<dT>::derOr_1_norm_2(matrix<dT> &norm){
               der_3d_dim2(i0+1,i1+1,i2+1)
               );
         }
+
+    double timer_elapsed = omp_get_wtime() - timer_start;
+    std::cout << "Derivatives exec. time (sec): " << timer_elapsed << std::endl;
   }else if(nDim==4){
     norm.initialize(4,size0-2,size1-2,size2-2,size3-2);
     for(i3=0;i3<size3-2;i3++)

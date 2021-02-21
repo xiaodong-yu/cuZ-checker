@@ -43,36 +43,7 @@ size_t r5, size_t r4, size_t r3, size_t r2, size_t r1)
 	double *diff = (double*)malloc(numOfElem*sizeof(double));
 	double *relDiff = (double*)malloc(numOfElem*sizeof(double));
 
-    int x = 0;
-    int N = 100;
-    int *data = new int[N];
-    for ( i=0; i<N; i++)
-        data[i] = i; 
-    #pragma omp parallel for reduction(max:x)
-    for ( i=0; i<N; i++)
-        x = max(x,data[i]);
-    printf("test:%i\n", x);
-
-    //int j = 0;
-    int tavg = 0;
-    x = 0;
-
     double timer_start = omp_get_wtime();
-    omp_set_num_threads(48);
-
-    #pragma omp parallel for reduction(+:tavg, x)
-    for (int j = 0; j < N; ++j) {
-        tavg += j;
-        x += data[j] * data[j];
-        //x += data[j] * 1;
-                    
-    }
-
-    double timer_elapsed = omp_get_wtime() - timer_start;
-    //tavg = tavg / N;
-
-    std::cout << x << " took " << timer_elapsed << std::endl;
-
 	for (i = 0; i < numOfElem; i++)
 	{
 		diff[i] = data2[i]-data1[i];
@@ -93,6 +64,8 @@ size_t r5, size_t r4, size_t r3, size_t r2, size_t r1)
 			sumErrSqr_rel += err*err;
 		}	
 	}
+    omp_set_num_threads(20);
+
     #pragma omp parallel for reduction(+:sum1)
     for (i = 0; i < numOfElem; ++i) {
         sum1 += data1[i];
@@ -133,8 +106,11 @@ size_t r5, size_t r4, size_t r3, size_t r2, size_t r1)
     for (i = 0; i < numOfElem; ++i) {
         sumErrSqr += fabs(diff[i]) * fabs(diff[i]);
     }
+
+    double timer_elapsed = omp_get_wtime() - timer_start;
+    std::cout << "Type one exec. time (sec): " << timer_elapsed << std::endl;
+
     printf("CPU:%e,%e,%e,%e,%e,%e,%e,%e,%e,%e\n", sum1, sum2, minDiff, maxDiff, sumDiff, sumOfDiffSquare, minErr, maxErr, sumErr, sumErrSqr);
-    exit(0);
 	
 	ZC_DataProperty* property = compareResult->property;
 	

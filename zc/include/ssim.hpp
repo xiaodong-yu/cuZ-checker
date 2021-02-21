@@ -123,6 +123,7 @@ double matrix<dT>::SSIM_3d_windowed(matrix &other, int windowSize0, int windowSi
   offsetInc1=windowShift1;
   offsetInc2=windowShift2;
 
+  double timer_start = omp_get_wtime();
   double local_sum; 
   for(offset2=0; offset2+windowSize2<=size2; offset2+=offsetInc2){ //MOVING WINDOW
       
@@ -130,7 +131,7 @@ double matrix<dT>::SSIM_3d_windowed(matrix &other, int windowSize0, int windowSi
       
       for(offset0=windowSize0; offset0<=size0; offset0+=offsetInc0) //MOVING WINDOW
         nw++;
-      omp_set_num_threads(4);
+      omp_set_num_threads(20);
       #pragma omp parallel private(local_sum, offset0) shared(ssimSum) 
       { 
           local_sum = 0;
@@ -144,8 +145,9 @@ double matrix<dT>::SSIM_3d_windowed(matrix &other, int windowSize0, int windowSi
     }
   }
   
-  cout<<"# of windows = "<<nw<<ssimSum<<endl;
-  exit(0);
+  //cout<<"# of windows = "<<nw<<ssimSum<<endl;
+  double timer_elapsed = omp_get_wtime() - timer_start;
+  std::cout << "Ssim exec. time (sec): " << timer_elapsed << std::endl;
   return ssimSum/nw;
   return 0;
 }
