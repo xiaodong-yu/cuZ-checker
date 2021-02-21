@@ -2,6 +2,7 @@
 #include <math.h>
 #include <assert.h>
 #include <sys/stat.h>
+#include <omp.h>
 #include "ZC_DataProperty.h"
 #include "zc.h"
 #include "iniparser.h"
@@ -32,11 +33,21 @@ double* ZC_compute_autocorrelation1D_double(double* data, size_t numOfElem, doub
 			for(delta = 1; delta <= AUTOCORR_SIZE; delta++)
 			{
 				double sum = 0;
-
-				for (i = 0; i < numOfElem-delta; i++)
-					sum += (data[i]-avg)*(data[i+delta]-avg);
+                double local_sum; 
+                omp_set_num_threads(4);
+                #pragma omp parallel private(local_sum, i) shared(sum) 
+                { 
+                    local_sum = 0;
+                    #pragma omp for schedule(static,1) 
+				    for (i = delta; i < numOfElem; i++){
+					   local_sum += (data[i]-avg)*(data[i+delta]-avg);
+                    }
+                    #pragma omp critical 
+                    sum += local_sum;
+                }
 
 				autocorr[delta] = sum/(numOfElem-delta)/cov;
+                printf("test:%e",sum);
 			}
 		}
 	}

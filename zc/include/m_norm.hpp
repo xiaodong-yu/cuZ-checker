@@ -2,6 +2,7 @@
 #define M_NORM_HPP
 
 #include <limits>
+#include <omp.h>
 
 //Available Norms:
 //derOr_1_norm_1
@@ -81,12 +82,14 @@ void matrix<dT>::derOr_1_norm_2(matrix<dT> &norm){
     norm.initialize(3,size0-2,size1-2,size2-2);
     for(i2=0;i2<size2-2;i2++)
       for(i1=0;i1<size1-2;i1++)
-        for(i0=0;i0<size0-2;i0++)
+        #pragma omp parallel for private(i0)
+        for(i0=2;i0<size0;i0++) {
           norm.data[i0+(size0-2)*(i1+(size1-2)*i2)]=vec_norm_2(
               der_3d_dim0(i0+1,i1+1,i2+1),
               der_3d_dim1(i0+1,i1+1,i2+1),
               der_3d_dim2(i0+1,i1+1,i2+1)
               );
+        }
   }else if(nDim==4){
     norm.initialize(4,size0-2,size1-2,size2-2,size3-2);
     for(i3=0;i3<size3-2;i3++)
