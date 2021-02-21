@@ -53,40 +53,29 @@ size_t r5, size_t r4, size_t r3, size_t r2, size_t r1)
         x = max(x,data[i]);
     printf("test:%i\n", x);
 
-    N = 600000000;
-    int j = 0;
-    double tavg = 0;
+    //int j = 0;
+    int tavg = 0;
+    x = 0;
 
     double timer_start = omp_get_wtime();
     omp_set_num_threads(48);
 
-    #pragma omp parallel for reduction(+:tavg)
-    for (j = 0; j < N; ++j) {
+    #pragma omp parallel for reduction(+:tavg, x)
+    for (int j = 0; j < N; ++j) {
         tavg += j;
+        x += data[j] * data[j];
+        //x += data[j] * 1;
                     
     }
 
     double timer_elapsed = omp_get_wtime() - timer_start;
-    tavg = tavg / N;
+    //tavg = tavg / N;
 
-    std::cout << tavg << " took " << timer_elapsed << std::endl;
+    std::cout << x << " took " << timer_elapsed << std::endl;
 
 	for (i = 0; i < numOfElem; i++)
 	{
-		sum1 += data1[i];
-		sum2 += data2[i];
-		
 		diff[i] = data2[i]-data1[i];
-		if(minDiff > diff[i]) minDiff = diff[i];
-		if(maxDiff < diff[i]) maxDiff = diff[i];
-		sumDiff += diff[i];
-		sumOfDiffSquare += diff[i]*diff[i];
-				
-		err = fabs(diff[i]);
-		if(minErr>err) minErr = err;
-		if(maxErr<err) maxErr = err;
-		sumErr += err;
-		sumErrSqr += err*err; //used for mse, nrmse, psnr
 	
 		if(data1[i]!=0)
 		{
@@ -104,6 +93,48 @@ size_t r5, size_t r4, size_t r3, size_t r2, size_t r1)
 			sumErrSqr_rel += err*err;
 		}	
 	}
+    #pragma omp parallel for reduction(+:sum1)
+    for (i = 0; i < numOfElem; ++i) {
+        sum1 += data1[i];
+    }
+    #pragma omp parallel for reduction(+:sum2)
+    for (i = 0; i < numOfElem; ++i) {
+        sum2 += data2[i];
+    }
+    #pragma omp parallel for reduction(min:minDiff)
+    for (i = 0; i < numOfElem; ++i) {
+        minDiff = min(minDiff, diff[i]);
+    }
+    #pragma omp parallel for reduction(max:maxDiff)
+    for (i = 0; i < numOfElem; ++i) {
+        maxDiff = max(maxDiff, diff[i]);
+    }
+    #pragma omp parallel for reduction(+:sumDiff)
+    for (i = 0; i < numOfElem; ++i) {
+        sumDiff += diff[i];
+    }
+    #pragma omp parallel for reduction(+:sumOfDiffSquare)
+    for (i = 0; i < numOfElem; ++i) {
+        sumOfDiffSquare += diff[i] * diff[i];
+    }
+    #pragma omp parallel for reduction(min:minErr)
+    for (i = 0; i < numOfElem; ++i) {
+        minErr = min(minErr, fabs(diff[i]));
+    }
+    #pragma omp parallel for reduction(max:maxErr)
+    for (i = 0; i < numOfElem; ++i) {
+        maxErr = max(maxErr, fabs(diff[i]));
+    }
+    #pragma omp parallel for reduction(+:sumErr)
+    for (i = 0; i < numOfElem; ++i) {
+        sumErr += fabs(diff[i]);
+    }
+    #pragma omp parallel for reduction(+:sumErrSqr)
+    for (i = 0; i < numOfElem; ++i) {
+        sumErrSqr += fabs(diff[i]) * fabs(diff[i]);
+    }
+    printf("CPU:%e,%e,%e,%e,%e,%e,%e,%e,%e,%e\n", sum1, sum2, minDiff, maxDiff, sumDiff, sumOfDiffSquare, minErr, maxErr, sumErr, sumErrSqr);
+    exit(0);
 	
 	ZC_DataProperty* property = compareResult->property;
 	
