@@ -6,6 +6,8 @@
 #include <cub/block/block_reduce.cuh>
 #include <cub/util_allocator.cuh>
 #include <cub/device/device_reduce.cuh>
+#include "CUB_der.h"
+#include "CUB_ssim.h"
 #include "timingGPU.h"
 
 using namespace cub;
@@ -135,3 +137,115 @@ void grid_reduce(float *data1, float *data2, double *ddiff, int fsize, double *a
     printf("test:%e\n", h_out);
 }
 
+float *Der(float *ddata, float *der, size_t r3, size_t r2, size_t r1, size_t order){
+
+    TimingGPU timer_GPU;
+    float *dder;
+    const int dsize = (r3-order*2) * (r2-order*2) * (r1-order*2) * sizeof(float);
+
+    cudaMalloc((void**)&dder, dsize); 
+    cudaMemcpy(dder, der, dsize, cudaMemcpyHostToDevice); 
+
+    int blksize = (r3-order*2)/(16-order*2)+((r3-order*2)%(16-order*2)?1:0);
+    timer_GPU.StartCounter();
+    dim3 dimBlock(16, 16);
+    dim3 dimGrid(blksize, 1);
+    derivatives<<<dimGrid, dimBlock>>>(ddata, dder, r3, r2, r1, order);
+
+    cudaMemcpy(der, dder, dsize, cudaMemcpyDeviceToHost); 
+
+    printf("GPU timing: %f ms\n", timer_GPU.GetCounter());
+    //for (int i=0;i<(r3-4)*(r2-4)*(r1-4);i++){
+    //    if (der[i]!=0.0) printf("ddata%i=%e\n",i,der[i]);
+    //}
+
+    cudaFree(dder);
+
+    return der;
+}
+
+float *autoCorr(float *ddata, size_t r3, size_t r2, size_t r1, float avg, size_t autosize){
+
+    TimingGPU timer_GPU;
+    float *autocor, *dautocor;
+    const int dsize = (r3-autosize) * (r2-autosize) * (r1-autosize) * sizeof(float);
+    int blksize = (r3-autosize)/(16-autosize)+((r3-autosize)%(16-autosize)?1:0);
+    int corsize = blksize * autosize * sizeof(float);
+
+    autocor = (float*)malloc(corsize);
+    memset(autocor, 0, corsize);
+    cudaMalloc((void**)&dautocor, corsize); 
+    cudaMemcpy(dautocor, autocor, corsize, cudaMemcpyHostToDevice);
+
+    timer_GPU.StartCounter();
+    dim3 dimBlock(16, 16);
+    dim3 dimGrid(blksize, 1);
+    const int sMemsize = (16 * dimBlock.x * dimBlock.y + dimBlock.y * autosize) * sizeof(double);
+    auto_corr<<<dimGrid, dimBlock, sMemsize>>>(ddata, dautocor, r3, r2, r1, avg, autosize);
+
+    cudaMemcpy(autocor, dautocor, corsize, cudaMemcpyDeviceToHost);
+
+    for (int i=0; i<autosize; i++)
+        for (int j=1; j<blksize; j++)
+            autocor[blksize*i] += autocor[blksize*i+j];
+
+    printf("GPU timing: %f ms\n", timer_GPU.GetCounter());
+    //for (int i=0;i<(r3-4)*(r2-4)*(r1-4);i++){
+    //    if (der[i]!=0.0) printf("ddata%i=%e\n",i,der[i]);
+    //}
+
+    cudaFree(dautocor);
+
+    return autocor;
+}
+
+int SSIM(float *data1, float *data2, size_t r3, size_t r2, size_t r1, int ssimSize, int ssimShift)
+{
+    TimingGPU timer_GPU;
+    float data[246];
+    for (int i=0; i<246; i++){
+        data[i] = 1;
+    }
+    int blksize = (r1 - ssimSize) / ssimShift + 1;
+    int xsize = ((r2 - ssimSize) / ssimShift + 1)*((r3 - ssimSize) / ssimShift + 1);
+
+    double results[blksize] = { 0 };
+    //printf("test=%f, %f\n", data[32], results[32]);
+
+    float *ddata1, *ddata2;
+    double *dresults;
+    //for (int i=r1*r2*6+r2*6;i<r1*r2*6+r2*6+7;i++){
+    ////for (int i=0;i<r1*r2*r3;i++){
+    //    printf("data%i=%e, %e\n",i, data1[i], data2[i]);
+    //    printf("data%i=%e, %e\n",i, data1[i], data2[i]);
+
+    //}
+
+    const int csize = r3 * r2 * r1 * sizeof(float);
+    const int isize = blksize * sizeof(double);
+
+    cudaMalloc((void**)&ddata1,   csize); 
+    cudaMalloc((void**)&ddata2,   csize); 
+    cudaMalloc((void**)&dresults, isize); 
+    cudaMemcpy(ddata1,   data1,   csize, cudaMemcpyHostToDevice); 
+    cudaMemcpy(ddata2,   data2,   csize, cudaMemcpyHostToDevice); 
+    cudaMemcpy(dresults, results, isize, cudaMemcpyHostToDevice); 
+
+    timer_GPU.StartCounter();
+    dim3 dimBlock(64, 1);
+    dim3 dimGrid(blksize, 1);
+    ssim<<<dimGrid, dimBlock>>>(ddata1, ddata2, dresults, r3, r2, r1, ssimSize, ssimShift);
+    cudaMemcpy(results, dresults, isize, cudaMemcpyDeviceToHost); 
+    double x=0;
+    for (int i=0; i<blksize; i++)
+        x += results[i];
+
+    printf("results=%e\n",x);
+    printf("GPU timing: %f ms\n", timer_GPU.GetCounter());
+
+    cudaFree(ddata1);
+    cudaFree(ddata2);
+    cudaFree(dresults);
+
+    return 0;
+}

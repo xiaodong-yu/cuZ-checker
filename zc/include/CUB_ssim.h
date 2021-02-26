@@ -1,5 +1,5 @@
-#ifndef CUZC_SSIM_H
-#define CUZC_SSIM_H
+#ifndef CUB_SSIM_H
+#define CUB_SSIM_H
 
 #include <stdio.h>
  
@@ -49,4 +49,4 @@ __global__ void hello(char *a, int *b);
 
 __global__ void ssim(float *data1, float *data2, double *results, int r3, int r2, int r1, int ssimSize, int ssimShift); 
 
-#endif /* ----- #ifndef CUZC_SSIM_H  ----- */
+#endif /* ----- #ifndef CUB_SSIM_H  ----- */

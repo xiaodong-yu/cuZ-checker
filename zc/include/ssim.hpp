@@ -2,7 +2,7 @@
 #define SSIM_HPP
 
 #include <time.h>
-#include "cuZC_entry.h"
+#include "CUB_reduce.h"
 
 
 template <typename dT>

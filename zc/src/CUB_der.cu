@@ -1,10 +1,10 @@
 #include <stdio.h>
 #include <math.h>
-#include "cuZC_ssim.h"
-#include "cuZC_typeTwo.h"
+#include "CUB_ssim.h"
+#include "CUB_der.h"
 #include "matrix.hpp"
 
-__global__ void type_two(float *data, float *der, int r3, int r2, int r1, size_t order) 
+__global__ void derivatives(float *data, float *der, int r3, int r2, int r1, size_t order) 
 {
     int tidx = threadIdx.x;
     int tidy = threadIdx.y;
@@ -60,7 +60,7 @@ __global__ void auto_corr(float *data, float *autocor, int r3, int r2, int r1, f
     int tidy = threadIdx.y;
     int bid = blockIdx.x;
 
-    float base;
+    float base, sum;
     int i, j;
     int h=bid*(16-autosize);
     double dx, dy, dz;

@@ -13,7 +13,6 @@
 #include "ZC_R_math.h"
 #endif
 #include "ZC_ssim.h"
-#include "cuZC_entry.h"
 #include "CUB_reduce.h"
 
 #include "matrix.hpp"
@@ -109,22 +108,22 @@ size_t r5, size_t r4, size_t r3, size_t r2, size_t r1)
     //block_reduce(data1, data2, diff, fsize, absErrPDF, results, r3, r2, r1, numOfElem);
     grid_reduce(data1, data2, diff, fsize, absErrPDF, results, r3, r2, r1, numOfElem);
     exit(0);
-    results = cu_typeOne(ddata1, ddata2, ddiff, absErrPDF, results, r3, r2, r1, numOfElem);
-    printf("GPU:%e,%e,%e,%e,%e,%e,%e,%e,%e,%e\n", results[r3*4], results[r3*5], results[0], results[r3*2], results[r3*6], results[r3*7], results[r3], results[r3*3], results[r3*8], results[r3*9]);
-    sum1 = results[r3*4];
-    sum2 = results[r3*5];
-    minDiff = results[0];
-    maxDiff = results[r3*2];
-    sumDiff = results[r3*6];
-    sumOfDiffSquare = results[r3*7];
-    minErr = results[r3];
-    maxErr = results[r3*3];
-    sumErr = results[r3*8];
-    sumErrSqr = results[r3*9];
+    //results = cu_typeOne(ddata1, ddata2, ddiff, absErrPDF, results, r3, r2, r1, numOfElem);
+    //printf("GPU:%e,%e,%e,%e,%e,%e,%e,%e,%e,%e\n", results[r3*4], results[r3*5], results[0], results[r3*2], results[r3*6], results[r3*7], results[r3], results[r3*3], results[r3*8], results[r3*9]);
+    //sum1 = results[r3*4];
+    //sum2 = results[r3*5];
+    //minDiff = results[0];
+    //maxDiff = results[r3*2];
+    //sumDiff = results[r3*6];
+    //sumOfDiffSquare = results[r3*7];
+    //minErr = results[r3];
+    //maxErr = results[r3*3];
+    //sumErr = results[r3*8];
+    //sumErrSqr = results[r3*9];
 
     size_t order=1;
 	float *der1 = (float*)malloc((r3-order*2)*(r2-order*2)*(r1-order*2)*sizeof(float));
-    der1 = cu_typeTwo(ddata1, der1, r3, r2, r1, order);
+    der1 = Der(ddata1, der1, r3, r2, r1, order);
     //exit(0);
 	//double *ss = (double*)malloc(100*2*sizeof(double));
     //memset(ss, 0, 100*2*sizeof(double));

@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <math.h>
-#include "cuZC_ssim.h"
+#include "CUB_ssim.h"
 #include "matrix.hpp"
 
 __global__ void hello(char *a, int *b) 

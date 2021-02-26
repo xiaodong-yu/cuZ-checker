@@ -5,8 +5,7 @@ set (zc_headers
   DynamicIntArray.h    ZC_DataSetHandler.h  ZC_gnuplot.h         ZC_util.h
   der.hpp              matrix.hpp           m_basic.hpp          m_der.hpp            m_der_metrics.hpp
   m_norm.hpp           norm.hpp             others.hpp           ssim.hpp             ZC_ssim.h
-  cuZC_entry.h         cuZC_ssim.h          timingGPU.h          cuZC_typeOne.h       cuZC_typeTwo.h
-  cuZC_typeThree.h     CUB_reduce.h
+  CUB_ssim.h           timingGPU.h          CUB_reduce.h         CUB_der.h
 )
 
 install (FILES ${zc_headers} DESTINATION include)
