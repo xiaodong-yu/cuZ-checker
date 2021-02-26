@@ -109,14 +109,14 @@ void block_reduce(float *data1, float *data2, double *ddiff, int fsize, double *
     if (d_elapsed) cudaFree(d_elapsed);
 }
 
-void grid_reduce(float *data1, float *data2, double *ddiff, int fsize, double *absErrPDF, double *results, size_t r3, size_t r2, size_t r1, size_t ne){
+void grid_sum(float *data, size_t ne){
 
     TimingGPU timer_GPU;
     // Allocate problem device arrays
     float *d_in = NULL;
     g_allocator.DeviceAllocate((void**)&d_in, sizeof(float) * ne);
 
-    cudaMemcpy(d_in, data2, sizeof(float) * ne, cudaMemcpyHostToDevice); 
+    cudaMemcpy(d_in, data, sizeof(float) * ne, cudaMemcpyHostToDevice); 
     // Allocate device output array
     float *d_out = NULL;
     g_allocator.DeviceAllocate((void**)&d_out, sizeof(float) * 1);
@@ -130,7 +130,63 @@ void grid_reduce(float *data1, float *data2, double *ddiff, int fsize, double *a
 
     // Run
     DeviceReduce::Sum(d_temp_storage, temp_storage_bytes, d_in, d_out, ne);
-    printf("GPU timing: %f ms\n", timer_GPU.GetCounter());
+    printf("GPU CUB sum time: %f ms\n", timer_GPU.GetCounter());
+
+    float *h_out = (float*) malloc(sizeof(float) * 1);
+    cudaMemcpy(h_out, d_out, sizeof(float) * 1, cudaMemcpyDeviceToHost); 
+    printf("test:%e\n", h_out);
+}
+
+void grid_min(float *data, size_t ne){
+
+    TimingGPU timer_GPU;
+    // Allocate problem device arrays
+    float *d_in = NULL;
+    g_allocator.DeviceAllocate((void**)&d_in, sizeof(float) * ne);
+
+    cudaMemcpy(d_in, data, sizeof(float) * ne, cudaMemcpyHostToDevice); 
+    // Allocate device output array
+    float *d_out = NULL;
+    g_allocator.DeviceAllocate((void**)&d_out, sizeof(float) * 1);
+
+    timer_GPU.StartCounter();
+    // Request and allocate temporary storage
+    void   *d_temp_storage = NULL;
+    size_t temp_storage_bytes = 0;
+    DeviceReduce::Min(d_temp_storage, temp_storage_bytes, d_in, d_out, ne);
+    g_allocator.DeviceAllocate(&d_temp_storage, temp_storage_bytes);
+
+    // Run
+    DeviceReduce::Min(d_temp_storage, temp_storage_bytes, d_in, d_out, ne);
+    printf("GPU CUB min time: %f ms\n", timer_GPU.GetCounter());
+
+    float *h_out = (float*) malloc(sizeof(float) * 1);
+    cudaMemcpy(h_out, d_out, sizeof(float) * 1, cudaMemcpyDeviceToHost); 
+    printf("test:%e\n", h_out);
+}
+
+void grid_max(float *data, size_t ne){
+
+    TimingGPU timer_GPU;
+    // Allocate problem device arrays
+    float *d_in = NULL;
+    g_allocator.DeviceAllocate((void**)&d_in, sizeof(float) * ne);
+
+    cudaMemcpy(d_in, data, sizeof(float) * ne, cudaMemcpyHostToDevice); 
+    // Allocate device output array
+    float *d_out = NULL;
+    g_allocator.DeviceAllocate((void**)&d_out, sizeof(float) * 1);
+
+    timer_GPU.StartCounter();
+    // Request and allocate temporary storage
+    void   *d_temp_storage = NULL;
+    size_t temp_storage_bytes = 0;
+    DeviceReduce::Max(d_temp_storage, temp_storage_bytes, d_in, d_out, ne);
+    g_allocator.DeviceAllocate(&d_temp_storage, temp_storage_bytes);
+
+    // Run
+    DeviceReduce::Max(d_temp_storage, temp_storage_bytes, d_in, d_out, ne);
+    printf("GPU CUB max time: %f ms\n", timer_GPU.GetCounter());
 
     float *h_out = (float*) malloc(sizeof(float) * 1);
     cudaMemcpy(h_out, d_out, sizeof(float) * 1, cudaMemcpyDeviceToHost); 
@@ -154,7 +210,7 @@ float *Der(float *ddata, float *der, size_t r3, size_t r2, size_t r1, size_t ord
 
     cudaMemcpy(der, dder, dsize, cudaMemcpyDeviceToHost); 
 
-    printf("GPU timing: %f ms\n", timer_GPU.GetCounter());
+    printf("GPU derivative time: %f ms\n", timer_GPU.GetCounter());
     //for (int i=0;i<(r3-4)*(r2-4)*(r1-4);i++){
     //    if (der[i]!=0.0) printf("ddata%i=%e\n",i,der[i]);
     //}
@@ -189,7 +245,7 @@ float *autoCorr(float *ddata, size_t r3, size_t r2, size_t r1, float avg, size_t
         for (int j=1; j<blksize; j++)
             autocor[blksize*i] += autocor[blksize*i+j];
 
-    printf("GPU timing: %f ms\n", timer_GPU.GetCounter());
+    printf("GPU autocorr time: %f ms\n", timer_GPU.GetCounter());
     //for (int i=0;i<(r3-4)*(r2-4)*(r1-4);i++){
     //    if (der[i]!=0.0) printf("ddata%i=%e\n",i,der[i]);
     //}
@@ -241,7 +297,7 @@ int SSIM(float *data1, float *data2, size_t r3, size_t r2, size_t r1, int ssimSi
         x += results[i];
 
     printf("results=%e\n",x);
-    printf("GPU timing: %f ms\n", timer_GPU.GetCounter());
+    printf("GPU ssim time: %f ms\n", timer_GPU.GetCounter());
 
     cudaFree(ddata1);
     cudaFree(ddata2);

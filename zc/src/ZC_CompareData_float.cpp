@@ -106,8 +106,16 @@ size_t r5, size_t r4, size_t r3, size_t r2, size_t r1)
     cudaMemcpy(ddiff, diff, dsize, cudaMemcpyHostToDevice); 
 
     //block_reduce(data1, data2, diff, fsize, absErrPDF, results, r3, r2, r1, numOfElem);
-    grid_reduce(data1, data2, diff, fsize, absErrPDF, results, r3, r2, r1, numOfElem);
-    exit(0);
+    grid_sum(data1, numOfElem);
+    grid_sum(data2, numOfElem);
+    grid_min((float*)diff, numOfElem);
+    grid_max((float*)diff, numOfElem);
+    grid_sum((float*)diff, numOfElem);
+    grid_sum((float*)diff, numOfElem);
+    grid_min((float*)diff, numOfElem);
+    grid_max((float*)diff, numOfElem);
+    grid_sum((float*)diff, numOfElem);
+    grid_sum((float*)diff, numOfElem);
     //results = cu_typeOne(ddata1, ddata2, ddiff, absErrPDF, results, r3, r2, r1, numOfElem);
     //printf("GPU:%e,%e,%e,%e,%e,%e,%e,%e,%e,%e\n", results[r3*4], results[r3*5], results[0], results[r3*2], results[r3*6], results[r3*7], results[r3], results[r3*3], results[r3*8], results[r3*9]);
     //sum1 = results[r3*4];
@@ -121,10 +129,6 @@ size_t r5, size_t r4, size_t r3, size_t r2, size_t r1)
     //sumErr = results[r3*8];
     //sumErrSqr = results[r3*9];
 
-    size_t order=1;
-	float *der1 = (float*)malloc((r3-order*2)*(r2-order*2)*(r1-order*2)*sizeof(float));
-    der1 = Der(ddata1, der1, r3, r2, r1, order);
-    //exit(0);
 	//double *ss = (double*)malloc(100*2*sizeof(double));
     //memset(ss, 0, 100*2*sizeof(double));
     //ss = cu_typeThree(ddata1, ddata2, ss, r3, r2, r1, ssimsize, ssimshift);
@@ -153,6 +157,30 @@ size_t r5, size_t r4, size_t r3, size_t r2, size_t r1)
 		minDiff_rel = avg-PWR_DIS_RNG_BOUND;
 		maxDiff_rel = avg+PWR_DIS_RNG_BOUND;
 	}
+
+    size_t order=1;
+	float *der1 = (float*)malloc((r3-order*2)*(r2-order*2)*(r1-order*2)*sizeof(float));
+    der1 = Der(ddata1, der1, r3, r2, r1, order);
+
+    float *autocor = autoCorr(ddata1, r3, r2, r1, avgDiff, order*2);
+    double *autocorr = (double*)malloc((order*2)*sizeof(double));
+    double cov = 0;
+    for (i = 0; i < numOfElem; i++)
+            cov += (data1[i] - avgDiff)*(data1[i] - avgDiff);
+    cov = cov/numOfElem;
+
+    if (cov == 0)
+    {
+        for (int delta = 0; delta < order*2; delta++)
+            autocorr[delta] = 0;
+                    
+    }else
+    {
+        for(int delta = 0; delta < order*2; delta++)
+            autocorr[delta] = autocor[delta]/(numOfElem-delta)/cov;
+        
+    }
+    cout << "test:" << cov << "," << autocorr[0] << "," << autocorr[1] << endl;
 	
 	int index;
 	

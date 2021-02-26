@@ -59,14 +59,6 @@ double zc_calc_metric_der_order1_ssim_float(float *data1, float *data2, float *d
   
   double result;
   int a=0;
-  for (int i=0; i<temp1.size0; i++){
-      for (int j=0; j<temp1.size1; j++){
-          for (int k=0; k<temp1.size2; k++){
-              if (temp1.data[i*temp1.size1*temp1.size2+j*temp1.size2+k]!=0.0) printf("data%i,%i,%i=%e\n",i,j,k,temp1.data[i*temp1.size1*temp1.size2+j*temp1.size2+k]-der1[i*temp1.size1*temp1.size2+j*temp1.size2+k]);
-          }
-      }
-  }
-  exit(0);
   //for (int i=temp1.size0*temp1.size1*6+temp1.size1*6;i<temp1.size0*temp1.size1*6+temp1.size1*6+7;i++){
   //for (int i=0;i<(r2-2);i++){
   //for (int j=0;j<(r1-2);j++){

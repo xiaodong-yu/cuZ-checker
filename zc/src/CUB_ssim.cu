@@ -182,7 +182,6 @@ __global__ void ssim(float *data1, float *data2, double *results, int r3, int r2
 
         }
     }
-if (tid == 0)printf("ydata%i,%i=%e\n",Offsetx,Offsety, result);
     if (tid==0) results[bid] = result;
     
 }
