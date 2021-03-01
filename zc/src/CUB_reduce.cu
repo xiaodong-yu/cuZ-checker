@@ -280,6 +280,7 @@ int SSIM(float *data1, float *data2, size_t r3, size_t r2, size_t r1, int ssimSi
     const int csize = r3 * r2 * r1 * sizeof(float);
     const int isize = blksize * sizeof(double);
 
+    timer_GPU.StartCounter();
     cudaMalloc((void**)&ddata1,   csize); 
     cudaMalloc((void**)&ddata2,   csize); 
     cudaMalloc((void**)&dresults, isize); 
@@ -287,7 +288,6 @@ int SSIM(float *data1, float *data2, size_t r3, size_t r2, size_t r1, int ssimSi
     cudaMemcpy(ddata2,   data2,   csize, cudaMemcpyHostToDevice); 
     cudaMemcpy(dresults, results, isize, cudaMemcpyHostToDevice); 
 
-    timer_GPU.StartCounter();
     dim3 dimBlock(64, 1);
     dim3 dimGrid(blksize, 1);
     ssim<<<dimGrid, dimBlock>>>(ddata1, ddata2, dresults, r3, r2, r1, ssimSize, ssimShift);
