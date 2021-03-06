@@ -10,12 +10,12 @@
 
 double* ZC_compute_autocorrelation1D_double(double* data, size_t numOfElem, double avg)
 {
+    double timer_start = omp_get_wtime();
 	double *autocorr = (double*)malloc((AUTOCORR_SIZE+1)*sizeof(double));
 
 	size_t i = 0;
 	int delta = 0;
 
-    double timer_start = omp_get_wtime();
     omp_set_num_threads(4);
 
 	if (numOfElem > 4096)
