@@ -101,7 +101,6 @@ void block_reduce(float *data1, float *data2, double *ddiff, int fsize, double *
 
     float *h_out = (float*) malloc(sizeof(float) * 1);
     cudaMemcpy(h_out, d_out, sizeof(float) * 1, cudaMemcpyDeviceToHost); 
-    printf("test:%e\n", h_out);
 
     // Cleanup
     if (d_in) cudaFree(d_in);
@@ -109,7 +108,7 @@ void block_reduce(float *data1, float *data2, double *ddiff, int fsize, double *
     if (d_elapsed) cudaFree(d_elapsed);
 }
 
-void grid_sum(float *data, size_t ne){
+double grid_sum(float *data, size_t ne){
 
     TimingGPU timer_GPU;
     // Allocate problem device arrays
@@ -117,11 +116,12 @@ void grid_sum(float *data, size_t ne){
     g_allocator.DeviceAllocate((void**)&d_in, sizeof(float) * ne);
 
     cudaMemcpy(d_in, data, sizeof(float) * ne, cudaMemcpyHostToDevice); 
+
+    timer_GPU.StartCounter();
     // Allocate device output array
     float *d_out = NULL;
     g_allocator.DeviceAllocate((void**)&d_out, sizeof(float) * 1);
 
-    timer_GPU.StartCounter();
     // Request and allocate temporary storage
     void   *d_temp_storage = NULL;
     size_t temp_storage_bytes = 0;
@@ -130,14 +130,17 @@ void grid_sum(float *data, size_t ne){
 
     // Run
     DeviceReduce::Sum(d_temp_storage, temp_storage_bytes, d_in, d_out, ne);
-    printf("GPU CUB sum time: %f ms\n", timer_GPU.GetCounter());
+    double duration = timer_GPU.GetCounter();
+    printf("GPU CUB sum time: %f ms\n", duration);
 
     float *h_out = (float*) malloc(sizeof(float) * 1);
     cudaMemcpy(h_out, d_out, sizeof(float) * 1, cudaMemcpyDeviceToHost); 
     printf("test:%e\n", h_out);
+
+    return duration;
 }
 
-void grid_min(float *data, size_t ne){
+double grid_min(float *data, size_t ne){
 
     TimingGPU timer_GPU;
     // Allocate problem device arrays
@@ -145,11 +148,12 @@ void grid_min(float *data, size_t ne){
     g_allocator.DeviceAllocate((void**)&d_in, sizeof(float) * ne);
 
     cudaMemcpy(d_in, data, sizeof(float) * ne, cudaMemcpyHostToDevice); 
+
+    timer_GPU.StartCounter();
     // Allocate device output array
     float *d_out = NULL;
     g_allocator.DeviceAllocate((void**)&d_out, sizeof(float) * 1);
 
-    timer_GPU.StartCounter();
     // Request and allocate temporary storage
     void   *d_temp_storage = NULL;
     size_t temp_storage_bytes = 0;
@@ -158,14 +162,17 @@ void grid_min(float *data, size_t ne){
 
     // Run
     DeviceReduce::Min(d_temp_storage, temp_storage_bytes, d_in, d_out, ne);
-    printf("GPU CUB min time: %f ms\n", timer_GPU.GetCounter());
+    double duration = timer_GPU.GetCounter();
+    printf("GPU CUB min time: %f ms\n", duration);
 
     float *h_out = (float*) malloc(sizeof(float) * 1);
     cudaMemcpy(h_out, d_out, sizeof(float) * 1, cudaMemcpyDeviceToHost); 
     printf("test:%e\n", h_out);
+    
+    return duration;
 }
 
-void grid_max(float *data, size_t ne){
+double grid_max(float *data, size_t ne){
 
     TimingGPU timer_GPU;
     // Allocate problem device arrays
@@ -173,11 +180,12 @@ void grid_max(float *data, size_t ne){
     g_allocator.DeviceAllocate((void**)&d_in, sizeof(float) * ne);
 
     cudaMemcpy(d_in, data, sizeof(float) * ne, cudaMemcpyHostToDevice); 
+
+    timer_GPU.StartCounter();
     // Allocate device output array
     float *d_out = NULL;
     g_allocator.DeviceAllocate((void**)&d_out, sizeof(float) * 1);
 
-    timer_GPU.StartCounter();
     // Request and allocate temporary storage
     void   *d_temp_storage = NULL;
     size_t temp_storage_bytes = 0;
@@ -186,11 +194,14 @@ void grid_max(float *data, size_t ne){
 
     // Run
     DeviceReduce::Max(d_temp_storage, temp_storage_bytes, d_in, d_out, ne);
-    printf("GPU CUB max time: %f ms\n", timer_GPU.GetCounter());
+    double duration = timer_GPU.GetCounter();
+    printf("GPU CUB max time: %f ms\n", duration);
 
     float *h_out = (float*) malloc(sizeof(float) * 1);
     cudaMemcpy(h_out, d_out, sizeof(float) * 1, cudaMemcpyDeviceToHost); 
     printf("test:%e\n", h_out);
+    
+    return duration;
 }
 
 float *Der(float *ddata, float *der, size_t r3, size_t r2, size_t r1, size_t order){

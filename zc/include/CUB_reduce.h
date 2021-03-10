@@ -3,11 +3,9 @@
 
 void block_reduce(float *data1, float *data2, double *ddiff, int fsize, double *absErrPDF, double *results, size_t r3, size_t r2, size_t r1, size_t ne);
 
-void grid_sum(float *data, size_t ne);
-
-void grid_min(float *data, size_t ne);
-
-void grid_max(float *data, size_t ne);
+double grid_sum(float *data, size_t ne);
+double grid_min(float *data, size_t ne);
+double grid_max(float *data, size_t ne);
 
 float *Der(float *ddata, float *der, size_t r3, size_t r2, size_t r1, size_t order);
 
