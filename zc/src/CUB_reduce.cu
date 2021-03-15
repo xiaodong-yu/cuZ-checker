@@ -136,6 +136,9 @@ double grid_sum(float *data, size_t ne){
     float *h_out = (float*) malloc(sizeof(float) * 1);
     cudaMemcpy(h_out, d_out, sizeof(float) * 1, cudaMemcpyDeviceToHost); 
     printf("test:%e\n", h_out);
+    if (d_in) g_allocator.DeviceFree(d_in);
+    if (d_out) g_allocator.DeviceFree(d_out);
+    if (d_temp_storage) g_allocator.DeviceFree(d_temp_storage);
 
     return duration;
 }
@@ -168,6 +171,9 @@ double grid_min(float *data, size_t ne){
     float *h_out = (float*) malloc(sizeof(float) * 1);
     cudaMemcpy(h_out, d_out, sizeof(float) * 1, cudaMemcpyDeviceToHost); 
     printf("test:%e\n", h_out);
+    if (d_in) g_allocator.DeviceFree(d_in);
+    if (d_out) g_allocator.DeviceFree(d_out);
+    if (d_temp_storage) g_allocator.DeviceFree(d_temp_storage);
     
     return duration;
 }
@@ -200,6 +206,9 @@ double grid_max(float *data, size_t ne){
     float *h_out = (float*) malloc(sizeof(float) * 1);
     cudaMemcpy(h_out, d_out, sizeof(float) * 1, cudaMemcpyDeviceToHost); 
     printf("test:%e\n", h_out);
+    if (d_in) g_allocator.DeviceFree(d_in);
+    if (d_out) g_allocator.DeviceFree(d_out);
+    if (d_temp_storage) g_allocator.DeviceFree(d_temp_storage);
     
     return duration;
 }
