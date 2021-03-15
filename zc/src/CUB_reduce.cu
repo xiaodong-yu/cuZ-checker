@@ -117,11 +117,11 @@ double grid_sum(float *data, size_t ne){
 
     cudaMemcpy(d_in, data, sizeof(float) * ne, cudaMemcpyHostToDevice); 
 
-    timer_GPU.StartCounter();
     // Allocate device output array
     float *d_out = NULL;
     g_allocator.DeviceAllocate((void**)&d_out, sizeof(float) * 1);
 
+    timer_GPU.StartCounter();
     // Request and allocate temporary storage
     void   *d_temp_storage = NULL;
     size_t temp_storage_bytes = 0;
@@ -130,15 +130,17 @@ double grid_sum(float *data, size_t ne){
 
     // Run
     DeviceReduce::Sum(d_temp_storage, temp_storage_bytes, d_in, d_out, ne);
+
+    if (d_temp_storage) g_allocator.DeviceFree(d_temp_storage);
+    if (d_in) g_allocator.DeviceFree(d_in);
+
     double duration = timer_GPU.GetCounter();
     printf("GPU CUB sum time: %f ms\n", duration);
 
     float *h_out = (float*) malloc(sizeof(float) * 1);
     cudaMemcpy(h_out, d_out, sizeof(float) * 1, cudaMemcpyDeviceToHost); 
     printf("test:%e\n", h_out);
-    if (d_in) g_allocator.DeviceFree(d_in);
     if (d_out) g_allocator.DeviceFree(d_out);
-    if (d_temp_storage) g_allocator.DeviceFree(d_temp_storage);
 
     return duration;
 }
@@ -152,11 +154,11 @@ double grid_min(float *data, size_t ne){
 
     cudaMemcpy(d_in, data, sizeof(float) * ne, cudaMemcpyHostToDevice); 
 
-    timer_GPU.StartCounter();
     // Allocate device output array
     float *d_out = NULL;
     g_allocator.DeviceAllocate((void**)&d_out, sizeof(float) * 1);
 
+    timer_GPU.StartCounter();
     // Request and allocate temporary storage
     void   *d_temp_storage = NULL;
     size_t temp_storage_bytes = 0;
@@ -165,15 +167,17 @@ double grid_min(float *data, size_t ne){
 
     // Run
     DeviceReduce::Min(d_temp_storage, temp_storage_bytes, d_in, d_out, ne);
+
+    if (d_temp_storage) g_allocator.DeviceFree(d_temp_storage);
+    if (d_in) g_allocator.DeviceFree(d_in);
+
     double duration = timer_GPU.GetCounter();
     printf("GPU CUB min time: %f ms\n", duration);
 
     float *h_out = (float*) malloc(sizeof(float) * 1);
     cudaMemcpy(h_out, d_out, sizeof(float) * 1, cudaMemcpyDeviceToHost); 
     printf("test:%e\n", h_out);
-    if (d_in) g_allocator.DeviceFree(d_in);
     if (d_out) g_allocator.DeviceFree(d_out);
-    if (d_temp_storage) g_allocator.DeviceFree(d_temp_storage);
     
     return duration;
 }
@@ -187,11 +191,11 @@ double grid_max(float *data, size_t ne){
 
     cudaMemcpy(d_in, data, sizeof(float) * ne, cudaMemcpyHostToDevice); 
 
-    timer_GPU.StartCounter();
     // Allocate device output array
     float *d_out = NULL;
     g_allocator.DeviceAllocate((void**)&d_out, sizeof(float) * 1);
 
+    timer_GPU.StartCounter();
     // Request and allocate temporary storage
     void   *d_temp_storage = NULL;
     size_t temp_storage_bytes = 0;
@@ -200,15 +204,17 @@ double grid_max(float *data, size_t ne){
 
     // Run
     DeviceReduce::Max(d_temp_storage, temp_storage_bytes, d_in, d_out, ne);
+
+    if (d_temp_storage) g_allocator.DeviceFree(d_temp_storage);
+    if (d_in) g_allocator.DeviceFree(d_in);
+
     double duration = timer_GPU.GetCounter();
     printf("GPU CUB max time: %f ms\n", duration);
 
     float *h_out = (float*) malloc(sizeof(float) * 1);
     cudaMemcpy(h_out, d_out, sizeof(float) * 1, cudaMemcpyDeviceToHost); 
     printf("test:%e\n", h_out);
-    if (d_in) g_allocator.DeviceFree(d_in);
     if (d_out) g_allocator.DeviceFree(d_out);
-    if (d_temp_storage) g_allocator.DeviceFree(d_temp_storage);
     
     return duration;
 }
